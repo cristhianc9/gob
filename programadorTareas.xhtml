@@ -1,0 +1,238 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+	<h:panelGroup styleClass="tituloPrincipalPagina" layout="block">
+		<h:outputText id="tituloSchedulePuntoFijo"
+			styleClass="tituloSecundarioPagina"
+			value=".:: #{msg.programadorTareas}" />
+	</h:panelGroup>
+	<p:growl id="mensajesSchedule" />
+	<h:panelGroup id="pnlSchedulePuntoFijo">
+
+		<p:schedule id="scheduleTareas"
+			value="#{asignacionTareasPuntoFijoController.eventModel}"
+			widgetVar="wvProgramadorTareas" locale="es" timeZone="GMT-5"
+			aspectRatio="2" slotMinutes="30" firstHour="8" axisFormat="HH:mm"
+			timeFormat="dd/MM HH:mm{-HH:mm}"
+			columnFormat="month:'ddd', week:'ddd', day:'dd/MM/yyyy'}, titleFormat: {day: 'dddd, dd \'de\' MMMM \'de\' yyyy'">
+
+			<p:ajax event="dateSelect" process="@this"
+				listener="#{asignacionTareasPuntoFijoController.onDateSelect}"
+				update="pnlGestionTarea" oncomplete="PF('eventDialog').show();">
+			</p:ajax>
+
+			<p:ajax event="eventSelect" process="@this"
+				listener="#{asignacionTareasPuntoFijoController.onEventSelect}"
+				update="pnlGestionTarea" oncomplete="PF('eventDialog').show();" />
+
+			<p:ajax event="eventMove" process="@this"
+				listener="#{asignacionTareasPuntoFijoController.onEventMove}"
+				oncomplete="wvProgramadorTareas.update()" update="mensajesSchedule" />
+
+			<p:ajax event="eventResize" process="@this"
+				listener="#{asignacionTareasPuntoFijoController.onEventResize}"
+				oncomplete="wvProgramadorTareas.update()" update="mensajesSchedule" />
+
+		</p:schedule>
+	</h:panelGroup>
+	<h:panelGroup layout="block">
+		<p:dialog widgetVar="eventDialog" modal="true" height="580"
+			width="750" header="Gestión de Tareas: Transacción" showEffect="clip"
+			hideEffect="clip">
+
+			<h:panelGroup id="pnlGestionTarea">
+
+				<h:panelGroup styleClass="tituloPrincipalPagina" layout="block">
+					<h:outputText styleClass="tituloSecundarioPagina"
+						value="#{msg.separadorTitulos} #{asignacionTareasPuntoFijoController.asignacionTareasPuntoFijoVo.tituloPaginaAsignacionTarea}"
+						rendered="true" />
+				</h:panelGroup>
+
+
+				<h:panelGroup>
+					<div class="barraSuperior">
+						<h:outputText value="#{msg.asignacionTareasDatos}" />
+					</div>
+				</h:panelGroup>
+				<h:panelGrid columns="2" id="pgdDatosTarea" styleClass="formulario"
+					columnClasses="formulario-label, topped">
+
+					<h:panelGroup id="pnlAgrupaTextoSujetoAIntervenir">
+						<h:outputText id="lblAgrupaTextoSujetoAIntervenir"
+							value="#{msg.asignacionTareasFuenteSujetoAIntervenir}" />
+						<h:outputText id="lblSujetoAIntervenirObligatorio" value="*"
+							styleClass="campoObligatorio" />
+					</h:panelGroup>
+
+					<h:panelGrid columns="2" id="pngAgrupaSujetoAIntervenir">
+						<h:panelGroup id="pnlAgrupaSujetoAIntervenir">
+							<h:inputText id="txtFuenteSujetoControlSeleccionado" size="60"
+								maxlength="300" required="true"
+								requiredMessage="#{msgVal.debeSeleccionarNombrePersonaAutorizaOperativo}"
+								value="#{asignacionTareasPuntoFijoController.asignacionTareasPuntoFijoTareasVo.cadenaFuenteSujetoControlSeleccionado}"
+								disabled="true" />
+						</h:panelGroup>
+						<p:commandButton immediate="true" id="btnAniadirNombreAutoridad"
+							disabled="#{asignacionTareasPuntoFijoController.accion == 'ACTUALIZAR'}"
+							actionListener="#{asignacionTareasPuntoFijoController.buscarFuenteSujetoControl}"
+							value="#{msg.asignacionTareasBotonBuscarSujeto}"
+							update=":#{p:component('pnlInformacionPersonaAutorizaOperativo')}"
+							oncomplete="PF('wvrFuenteSujetoCotrolOperativo').show();">
+						</p:commandButton>
+					</h:panelGrid>
+
+					<h:panelGroup id="pnlAgrupaTextoFechaEjecucionAsigancionTarea">
+						<h:outputText id="lblFechaEjecucionAsigancionTarea"
+							value="#{msg.asignacionTareasFechaEjecucion}" />
+						<h:outputText id="lblFechaEjecucionAsigancionTareaObligatorio"
+							value="*" styleClass="campoObligatorio" />
+					</h:panelGroup>
+					<h:panelGrid columns="2"
+						id="pngAgrupaFechaEjecucionAsigancionTarea">
+						<h:panelGroup id="pnlAgrupaFechaEjecucionAsigancionTarea"
+							rendered="true">
+							<p:calendar showButtonPanel="true" navigator="true" locale="es"
+								tabindex="12" id="pbtFechaEjecucionAsigancionTarea"
+								disabled="false" showOn="button"
+								value="#{asignacionTareasPuntoFijoController.sujetoIntervencionParticipante.fechaEjecucion}"
+								required="true"
+								requiredMessage="#{msg.asignacionTareasFechaEjecucionObligatorio}"
+								pattern="#{msg.formatoSoloFecha}"
+								converterMessage="#{msg.preoperativoFormatoFecha}"
+								styleClass="mascaraFecha">
+								<f:convertDateTime for="pbtFechaEjecucionAsigancionTarea"
+									pattern="#{msg.formatoSoloFecha}" />
+								<p:ajax event="dateSelect" process="@this">
+								</p:ajax>
+							</p:calendar>
+						</h:panelGroup>
+					</h:panelGrid>
+
+
+					<h:panelGroup id="pnlHoraInicioAsignacionTarea">
+						<h:outputText id="lblHoraInicioAsignacionTarea"
+							value="#{msg.asignacionTareasHoraInicio}" />
+						<h:outputText id="lblHoraInicioAsignacionTareaObligatoria"
+							value="*" styleClass="campoObligatorio" />
+					</h:panelGroup>
+					<h:panelGrid columns="2" id="pngAgrupaHoraInicioAsignacionTarea">
+						<h:panelGroup id="pnlAgrupaHoraInicioAsignacionTarea">
+							<p:calendar navigator="true" locale="es" size="8"
+								disabled="false"
+								value="#{asignacionTareasPuntoFijoController.sujetoIntervencionParticipante.horaInicio}"
+								id="pbtHoraInicioAsignacionTarea" required="true"
+								requiredMessage="#{msg.asignacionTareasHoraInicioObligatorio}"
+								pattern="HH:mm"
+								converterMessage="#{msg.asignacionTareasHoraInicio} #{msg.operativoFormatoHora}"
+								styleClass="mascaraHora" timeOnly="true">
+
+								<f:convertDateTime for="pbtHoraInicioAsignacionTarea"
+									pattern="HH:mm" />
+
+								<p:ajax event="change"
+									process="@this,pbtHoraInicioAsignacionTarea"
+									listener="#{asignacionTareasPuntoFijoController.validarHoraInicioTarea(asignacionTareasPuntoFijoController.sujetoIntervencionParticipante)}">
+								</p:ajax>
+								<p:ajax event="dateSelect"
+									process="@this,pbtHoraInicioAsignacionTarea"
+									listener="#{asignacionTareasPuntoFijoController.validarHoraInicioTarea(asignacionTareasPuntoFijoController.sujetoIntervencionParticipante)}">
+								</p:ajax>
+							</p:calendar>
+							<br />
+							<h:outputText id="lblMensajeHoraInicio"
+								value="#{msg.operativoMensajeFormatoHora}" />
+						</h:panelGroup>
+					</h:panelGrid>
+
+					<h:panelGroup id="pnlHoraFinAsignacionTarea">
+						<h:outputText id="lblHoraFinAsignacionTarea"
+							value="#{msg.asignacionTareasHoraFin}" />
+						<h:outputText id="lblHoraFinAsignacionTareaObligatoria" value="*"
+							styleClass="campoObligatorio" />
+					</h:panelGroup>
+					<h:panelGrid columns="2" id="pngAgrupaHoraFinAsignacionTarea">
+						<h:panelGroup id="pnlAgrupaHoraFinAsignacionTarea">
+							<p:calendar navigator="true" locale="es" size="8"
+								disabled="false"
+								value="#{asignacionTareasPuntoFijoController.sujetoIntervencionParticipante.horaFin}"
+								id="pbtHoraFinAsignacionTarea" required="true"
+								requiredMessage="#{msg.asignacionTareasHoraFinObligatorio}"
+								pattern="HH:mm"
+								converterMessage="#{msg.asignacionTareasHoraFin} #{msg.operativoFormatoHora}"
+								styleClass="mascaraHora" timeOnly="true">
+
+								<f:convertDateTime for="pbtHoraInicioAsignacionTarea"
+									pattern="HH:mm" />
+
+
+								<p:ajax event="change"
+									process="@this,pbtHoraInicioAsignacionTarea"
+									listener="#{asignacionTareasPuntoFijoController.validarHoraFinTarea(asignacionTareasPuntoFijoController.sujetoIntervencionParticipante)}">
+								</p:ajax>
+								<p:ajax event="dateSelect"
+									process="@this,pbtHoraInicioAsignacionTarea"
+									listener="#{asignacionTareasPuntoFijoController.validarHoraFinTarea(asignacionTareasPuntoFijoController.sujetoIntervencionParticipante)}">
+								</p:ajax>
+
+							</p:calendar>
+							<br />
+							<h:outputText value="#{msg.operativoMensajeFormatoHora}" />
+						</h:panelGroup>
+					</h:panelGrid>
+
+
+					<h:panelGroup rendered="true">
+						<h:outputText id="lblTextoParticiánte"
+							value="#{msg.asignacionTareasParticipante}" />
+						<h:outputText id="lblParticipanteAsigancionTareaObligatorio"
+							value="*" styleClass="campoObligatorio" />
+					</h:panelGroup>
+
+					<h:panelGroup id="pnlAgrupaFuenteSujetoControl" rendered="true">
+						<p:selectOneMenu rendered="true" label="Fedatario"
+							id="cmbParticipantes" disabled="false" required="true"
+							requiredMessage="#{msg.asignacionTareasSeleccionParticipante}"
+							value="#{asignacionTareasPuntoFijoController.asignacionTareasPuntoFijoVo.codigoFedatarioAsignado}">
+							<f:selectItem itemLabel="#{msg.opcionSeleccionarCombo}"
+								noSelectionOption="true" />
+							<f:selectItems var="itemFeda" itemLabel="#{itemFeda.nombre}"
+								itemValue="#{itemFeda.codigoFedatario}"
+								value="#{participantePreoperativoController.listaParticipantes}"></f:selectItems>
+							<p:ajax event="change" update="pbtHoraFinAsignacionTarea"
+								listener="#{asignacionTareasPuntoFijoController.participanteOnChange}"></p:ajax>
+						</p:selectOneMenu>
+						<br></br>
+					</h:panelGroup>
+
+
+				</h:panelGrid>
+				<div class="barraInferior">
+
+					<p:commandButton id="btnGuardar" value="#{msg.botonGuardar}"
+						actionListener="#{asignacionTareasPuntoFijoController.addEvent}"
+						disabled="#{!asignacionTareasPuntoFijoController.sujetoIntervencionParticipante.eliminable}"
+						process="@this pgdDatosTarea">
+					</p:commandButton>
+
+					<p:commandButton value="#{msg.botonEliminar}"
+						rendered="#{not empty asignacionTareasPuntoFijoController.event.id}"
+						disabled="#{!asignacionTareasPuntoFijoController.sujetoIntervencionParticipante.eliminable}"
+						action="#{asignacionTareasPuntoFijoController.eliminarSujetoIntervencionParticipante(asignacionTareasPuntoFijoController.sujetoIntervencionParticipante)}"
+						process="@this"
+						oncomplete="if (!args.validationFailed) {wvProgramadorTareas.update();PF('eventDialog').hide()}">
+					</p:commandButton>
+
+					<p:commandButton id="btnCancelarAsignacionTarea"
+						value="#{msg.botonSalir}" oncomplete="PF('eventDialog').hide();"
+						immediate="true" />
+				</div>
+				<br />
+			</h:panelGroup>
+		</p:dialog>
+	</h:panelGroup>
+</ui:composition>
